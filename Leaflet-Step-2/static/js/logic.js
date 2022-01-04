@@ -8,31 +8,64 @@
 // ****************************************************************************
 
 
-function createMap(earthquakes) {
+function createMap(earthquakes, tecPlates) {
 
-    // Create the tile layer that will be the background of our map
+    // Create the tile layers that will be the background of our map
+    
+    // ** Streetmap Layer
+    var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+      attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+      maxZoom: 18,
+      id: "mapbox/streets-v11",
+      accessToken: API_KEY
+    });
+    // ** Lightmap layer
     var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
       attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
       maxZoom: 18,
       id: "light-v10",
       accessToken: API_KEY
     });
-  
+    // ** Darkmap layer
+    var darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+      attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+      maxZoom: 18,
+      id: "dark-v10",
+      accessToken: API_KEY
+    });    
+    // ** Satellite layer
+    var satellitemap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+      attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+      maxZoom: 18,
+      id: "satellite-v9",
+      accessToken: API_KEY
+    });       
+ 
+
+
     // Create a baseMaps object to hold the lightmap layer
     var baseMaps = {
-      "Light Map": lightmap
+      "Street Map": streetmap,
+      "Light Map": lightmap,
+      "Dark Map": darkmap,
+      "Satellite Map": satellitemap
     };
   
+
+
+
     // Create an overlayMaps object to hold the bikeStations layer
     var overlayMaps = {
-      "Earthquakes": earthquakes
+      "Earthquakes": earthquakes,
+      // "Tectonic Plates": earthquakes,
+      "Tectonic Plates": tecPlates
     };
   
     // Create the map object with options
     var map = L.map("map", {
       center: [0,0],
       zoom: 2,
-      layers: [lightmap, earthquakes]
+      layers: [satellitemap, earthquakes]
     });
   
     // Create a layer control, pass in the baseMaps and overlayMaps. Add the layer control to the map
@@ -73,6 +106,8 @@ function createMarkers(response) {
 
     // SET FILL COLORS BASED ON EARTHQUAKE DEPTH, THE 3RD COORDINATE PROVIDED
     var depthColor = "";
+
+    
     if (eq.geometry.coordinates[2] >= 90) {
       color = "#b60a1c";
     }
@@ -112,14 +147,29 @@ function createMarkers(response) {
     eqMarkers.push(eqMarker);
   }
 
+
+  var link = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json";
+  var tecPlates;
+
+  // Grabbing our GeoJSON data..
+  d3.json(link).then(function(data) {
+    // Creating a GeoJSON layer with the retrieved data
+    // console.log("DATA", data);
+    tecPlates = L.geoJson(data); //.addTo(map);
+    console.log("tecPlates",tecPlates);
+  });
+
   // Create a layer group made from the earthquake markers array, pass it into the createMap function
-  createMap(L.layerGroup(eqMarkers));
+  createMap(L.layerGroup(eqMarkers), L.layerGroup(tecPlates));
+
+
+
   updateLegend();
 }
 
+
 // Update the legend's innerHTML
-function updateLegend(dtGenerated) {
-  console.log(dtGenerated);
+function updateLegend() {
   document.querySelector(".legend").innerHTML = [
     "<p> DEPTH </p>",
     "<p class='maglt10'> < 10 </p>",
@@ -131,5 +181,5 @@ function updateLegend(dtGenerated) {
   ].join("");
 }
 
-// Perform an API call to the USGS API to get eqrthquake information. Call createMarkers when complete
+// Perform an API call to the USGS API to get earthquake information. Call createMarkers when complete
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(createMarkers);
