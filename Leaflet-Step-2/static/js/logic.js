@@ -8,7 +8,15 @@
 // ****************************************************************************
 
 
-function createMap(earthquakes, tecPlates) {
+// ***************************
+// FUNCTION TO CREATE MAP
+// ***************************
+
+// Initial placeholder for the tecPlates layer
+//   which will be added to the map later.
+var tecPlates = new L.LayerGroup();
+
+function createMap(earthquakes) {
 
     // Create the tile layers that will be the background of our map
     
@@ -51,9 +59,6 @@ function createMap(earthquakes, tecPlates) {
       "Satellite Map": satellitemap
     };
   
-
-
-
     // Create an overlayMaps object to hold the bikeStations layer
     var overlayMaps = {
       "Earthquakes": earthquakes,
@@ -65,7 +70,7 @@ function createMap(earthquakes, tecPlates) {
     var map = L.map("map", {
       center: [0,0],
       zoom: 2,
-      layers: [satellitemap, earthquakes]
+      layers: [satellitemap, earthquakes, tecPlates]
     });
   
     // Create a layer control, pass in the baseMaps and overlayMaps. Add the layer control to the map
@@ -148,22 +153,22 @@ function createMarkers(response) {
   }
 
 
-  var link = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json";
-  var tecPlates;
+  var tecLink = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
 
   // Grabbing our GeoJSON data..
-  d3.json(link).then(function(data) {
-    // Creating a GeoJSON layer with the retrieved data
-    // console.log("DATA", data);
-    tecPlates = L.geoJson(data); //.addTo(map);
-    console.log("tecPlates",tecPlates);
+  d3.json(tecLink).then(function(boundaries) {
+  //   // Creating a GeoJSON layer with the retrieved data
+    L.geoJson(boundaries, {
+        color: "blue",
+        weight: 2
+    })
+    .addTo(tecPlates)
   });
 
   // Create a layer group made from the earthquake markers array, pass it into the createMap function
-  createMap(L.layerGroup(eqMarkers), L.layerGroup(tecPlates));
+  createMap(L.layerGroup(eqMarkers));
 
-
-
+  // Call function to update the legend
   updateLegend();
 }
 

@@ -8,6 +8,10 @@
 // ****************************************************************************
 
 
+// ***************************
+// FUNCTION TO CREATE MAP
+// ***************************
+
 function createMap(earthquakes) {
 
     // Create the tile layer that will be the background of our map
