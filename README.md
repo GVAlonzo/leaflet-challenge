@@ -6,7 +6,7 @@ Leaflet Homework - Visualizing Data with Leaflet
 ## STEP 1 ##
 
 
-![Screenshot](step1screenshot.png)
+![Screenshot](/screenshots/step1screenshot.png)
 
 ## STEP 2 ##
 
